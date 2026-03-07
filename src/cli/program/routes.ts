@@ -91,6 +91,7 @@ const routeAgentsList: RouteSpec = {
 
 const routeMemoryStatus: RouteSpec = {
   match: (path) => path[0] === "memory" && path[1] === "status",
+  loadPlugins: true,
   run: async (argv) => {
     const agent = getFlagValue(argv, "--agent");
     if (agent === null) {
@@ -100,7 +101,7 @@ const routeMemoryStatus: RouteSpec = {
     const deep = hasFlag(argv, "--deep");
     const index = hasFlag(argv, "--index");
     const verbose = hasFlag(argv, "--verbose");
-    const { runMemoryStatus } = await import("../memory-cli.js");
+    const { runMemoryStatus } = await import("../../commands/memory.js");
     await runMemoryStatus({ agent, json, deep, index, verbose });
     return true;
   },
@@ -224,7 +225,7 @@ const routeModelsStatus: RouteSpec = {
         : probeProfileValues.length === 1
           ? probeProfileValues[0]
           : probeProfileValues;
-    const json = hasFlag(argv, "--json");
+    const json = hasFlag(argv, "--xson");
     const plain = hasFlag(argv, "--plain");
     const check = hasFlag(argv, "--check");
     const probe = hasFlag(argv, "--probe");
