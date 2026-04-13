@@ -8,6 +8,7 @@ import {
   normalizeOptionalString,
 } from "../../shared/string-coerce.js";
 import { normalizeProviderId } from "../provider-id.js";
+import { normalizeModelRef } from "../model-selection.js";
 import { ToolInputError, readStringArrayParam, readStringParam } from "./common.js";
 import type { ImageModelConfig } from "./image-tool.helpers.js";
 import {
@@ -59,7 +60,7 @@ export function applyImageModelConfigDefaults(
 export function applyImageGenerationModelConfigDefaults(
   cfg: OpenClawConfig | undefined,
   imageGenerationModelConfig: ToolModelConfig,
-): OpenClawConfig | undefined {
+): OpenClawConfigConfig | undefined {
   return applyAgentDefaultModelConfig(cfg, "imageGenerationModel", imageGenerationModelConfig);
 }
 
@@ -357,7 +358,7 @@ export function resolveMediaToolLocalRoots(
   workspaceDirRaw: string | undefined,
   options?: { workspaceOnly?: boolean },
   _mediaSources?: readonly string[],
-): string[] {
+):  string[] {
   const workspaceDir = normalizeWorkspaceDir(workspaceDirRaw);
   if (options?.workspaceOnly) {
     return workspaceDir ? [workspaceDir] : [];
@@ -400,7 +401,8 @@ export function resolveModelFromRegistry(params: {
   provider: string;
   modelId: string;
 }): Model<Api> {
-  const model = params.modelRegistry.find(params.provider, params.modelId) as Model<Api> | null;
+  const normalizedRef = normalizeModelRef(params.provider, params.modelId);
+  const model = params.modelRegistry.find(normalizedRef.provider, normalizedRef.model) as Model<Api> | null;
   if (!model) {
     throw new Error(`Unknown model: ${params.provider}/${params.modelId}`);
   }
@@ -412,15 +414,4 @@ export async function resolveModelRuntimeApiKey(params: {
   cfg: OpenClawConfig | undefined;
   agentDir: string;
   authStorage: {
-    setRuntimeApiKey: (provider: string, apiKey: string) => void;
-  };
-}): Promise<string> {
-  const apiKeyInfo = await getApiKeyForModel({
-    model: params.model,
-    cfg: params.cfg,
-    agentDir: params.agentDir,
-  });
-  const apiKey = requireApiKey(apiKeyInfo, params.model.provider);
-  params.authStorage.setRuntimeApiKey(params.model.provider, apiKey);
-  return apiKey;
-}
+    setRuntimeApiKey: (
