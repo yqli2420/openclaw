@@ -135,6 +135,9 @@ const ERROR_PATTERNS = {
     /extra usage is required(?: for long context requests)?/i,
     // Z.ai: error 1311 = model not included in current subscription plan (#48988)
     ZAI_BILLING_CODE_1311_RE,
+    // Billing cooldown skip path messages (#66314)
+    /has billing issue/i,
+    /skipping all models/i,
   ],
   authPermanent: HIGH_CONFIDENCE_AUTH_PERMANENT_PATTERNS,
   auth: [
